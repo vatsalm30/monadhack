@@ -204,7 +204,16 @@ export function mockPredict(duelId: string, side: "A" | "B", amount: bigint): vo
   log({ duelId, user: MOCK_ME, kind: "PREDICTED", side, amount });
 }
 
-export function mockCommitVote(duelId: string): void {
+/** Stands in for the onchain commitment: what the mock can test a reveal against. */
+const committedSides = new Map<string, "A" | "B">();
+
+// The seeded ballot on duel 4, so "reveal my vote" has something to recover.
+committedSides.set("4", "B");
+
+export const mockCommittedSide = (duelId: string): "A" | "B" | null => committedSides.get(duelId) ?? null;
+
+export function mockCommitVote(duelId: string, side: "A" | "B"): void {
+  committedSides.set(duelId, side);
   patch(duelId, (d) => ({ ...d, committedVotes: d.committedVotes + 1 }));
   upsert(duelId, (p) => ({ ...p, committed: true }));
   log({ duelId, user: MOCK_ME, kind: "COMMITTED", side: null, amount: 0n });
