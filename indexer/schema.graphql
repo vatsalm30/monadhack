@@ -1,0 +1,90 @@
+# Field names match shared/types.ts and shared/queries.graphql.
+
+enum Outcome {
+  OPEN
+  A
+  B
+  REFUND
+}
+
+enum Side {
+  A
+  B
+}
+
+enum ActivityKind {
+  CREATED
+  PREDICTED
+  VOTE_COMMITTED
+  VOTE_REVEALED
+  SETTLED
+  CLAIMED
+  VOTER_REWARD
+  CREATOR_PAID
+}
+
+type Duel {
+  id: ID!
+  creator: String! @index
+  room: String! @index
+  title: String!
+  uriA: String!
+  uriB: String!
+  hashA: String!
+  hashB: String!
+  createdAt: Int! @index
+  commitEnd: Int!
+  revealEnd: Int!
+  poolA: BigInt!
+  poolB: BigInt!
+  predictors: Int!
+  committedVotes: Int!
+  votesA: Int!
+  votesB: Int!
+  outcome: Outcome!
+}
+
+# id = `${duelId}_${user}`. Covers both predictors and voters (a user is one or the other per duel).
+type Position {
+  id: ID!
+  duelId: String! @index
+  user: String! @index
+  side: Side
+  stake: BigInt!
+  # First prediction for predictors, vote commit time for voters.
+  firstAt: Int!
+  claimed: Boolean!
+  committed: Boolean!
+  revealed: Side
+  voterRewardClaimed: Boolean!
+}
+
+type User {
+  id: ID!
+  tasteRep: Int! @index
+  # Profit only: payout minus stake, summed over winning claims.
+  earned: BigInt!
+  creatorEarned: BigInt!
+  voterEarned: BigInt!
+  duelsCreated: Int!
+  predictions: Int!
+  correctCalls: Int!
+  votesRevealed: Int!
+}
+
+# id = room slug decoded from the onchain bytes32.
+type Room {
+  id: ID!
+  duelCount: Int!
+  totalPool: BigInt!
+}
+
+type Activity {
+  id: ID!
+  duelId: String! @index
+  user: String!
+  kind: ActivityKind!
+  side: Side
+  amount: BigInt
+  timestamp: Int!
+}
