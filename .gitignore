@@ -1,0 +1,22 @@
+# dependencies
+node_modules/
+
+# secrets
+.env
+.env.local
+.env.*.local
+
+# build output
+out/
+cache/
+generated/
+dist/
+build/
+
+# runtime data (uploads, insights, envio db)
+data/
+
+# misc
+.DS_Store
+*.log
+broadcast/

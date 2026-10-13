@@ -1,0 +1,123 @@
+# Envio HyperIndex GraphQL (Hasura flavour). Endpoint: VITE_ENVIO_URL.
+# Entity names match indexer/schema.graphql: Duel, Position, User, Room, Activity.
+
+query Feed($room: String!, $limit: Int = 24) {
+  Duel(
+    where: { room: { _eq: $room } }
+    order_by: { createdAt: desc }
+    limit: $limit
+  ) {
+    id
+    creator
+    room
+    title
+    uriA
+    uriB
+    hashA
+    hashB
+    createdAt
+    commitEnd
+    revealEnd
+    poolA
+    poolB
+    predictors
+    committedVotes
+    votesA
+    votesB
+    outcome
+  }
+}
+
+query DuelById($id: String!) {
+  Duel(where: { id: { _eq: $id } }) {
+    id
+    creator
+    room
+    title
+    uriA
+    uriB
+    hashA
+    hashB
+    createdAt
+    commitEnd
+    revealEnd
+    poolA
+    poolB
+    predictors
+    committedVotes
+    votesA
+    votesB
+    outcome
+  }
+}
+
+query PositionsByUser($user: String!, $limit: Int = 100) {
+  Position(
+    where: { user: { _eq: $user } }
+    order_by: { firstAt: desc }
+    limit: $limit
+  ) {
+    id
+    duelId
+    user
+    side
+    stake
+    firstAt
+    claimed
+    committed
+    revealed
+    voterRewardClaimed
+  }
+}
+
+query Leaderboard($limit: Int = 20) {
+  User(order_by: { tasteRep: desc }, limit: $limit) {
+    id
+    tasteRep
+    earned
+    creatorEarned
+    voterEarned
+    duelsCreated
+    predictions
+    correctCalls
+    votesRevealed
+  }
+}
+
+query UserById($id: String!) {
+  User(where: { id: { _eq: $id } }) {
+    id
+    tasteRep
+    earned
+    creatorEarned
+    voterEarned
+    duelsCreated
+    predictions
+    correctCalls
+    votesRevealed
+  }
+}
+
+query ActivityByDuel($duelId: String!, $limit: Int = 50) {
+  Activity(
+    where: { duelId: { _eq: $duelId } }
+    order_by: { timestamp: desc }
+    limit: $limit
+  ) {
+    id
+    duelId
+    user
+    kind
+    side
+    amount
+    timestamp
+  }
+}
+
+query Rooms {
+  Room(order_by: { duelCount: desc }) {
+    id
+    duelCount
+    totalPool
+  }
+}
