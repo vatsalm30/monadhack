@@ -2,7 +2,7 @@ import { useState } from "react";
 import * as actions from "../lib/actions";
 import { describeTxError } from "../lib/chain";
 import { uploadPair } from "../lib/data";
-import { API_URL, ROOMS, type Room } from "../lib/env";
+import { API_URL, CHAIN_READY, ROOMS, type Room } from "../lib/env";
 import { compress, hashFile, type Prepared } from "../lib/image";
 import { go, paths } from "../lib/router";
 
@@ -54,12 +54,20 @@ export function Create(): JSX.Element {
       setError("Give the duel a title.");
       return;
     }
+    // The image URL is written into the contract and can never be edited, so a data URI must never
+    // reach a real transaction: it would be hundreds of KB of calldata on a chain that bills the
+    // declared gas limit, and it is unreadable to anyone but this browser.
+    if (CHAIN_READY && API_URL === "") {
+      setError("No upload server is configured, so this duel cannot be posted onchain. Set VITE_API_URL and reload.");
+      return;
+    }
+
     setError(null);
     try {
       setBusy("upload");
       let uploaded: { uriA: string; uriB: string; hashA: `0x${string}`; hashB: `0x${string}` };
       if (API_URL === "") {
-        // No server configured yet: keep the images local so the flow still works end to end.
+        // Mock mode only: keep the images local so the flow still works end to end.
         const [hashA, hashB] = await Promise.all([hashFile(a.prepared.file), hashFile(b.prepared.file)]);
         uploaded = { uriA: a.prepared.preview, uriB: b.prepared.preview, hashA, hashB };
       } else {
