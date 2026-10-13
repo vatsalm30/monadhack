@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=./node_modules/envio/evm.schema.json
+name: pairwise-indexer
+disable_default_cross_chain: true
+chains:
+  - id: 10143 # Monad testnet
+    start_block: 70808463
+    contracts:
+      - name: Pairwise
+        address:
+          - "0xe4F3962C903a7e1bC45A2D0bD8A7F5b6379a3353"
+        events:
+          - event: DuelCreated(uint256 indexed id, address indexed creator, bytes32 indexed room, string title, string uriA, string uriB, bytes32 hashA, bytes32 hashB, uint64 commitEnd, uint64 revealEnd)
+          - event: Predicted(uint256 indexed id, address indexed user, uint8 side, uint256 amount, uint128 poolA, uint128 poolB)
+          - event: VoteCommitted(uint256 indexed id, address indexed voter)
+          - event: VoteRevealed(uint256 indexed id, address indexed voter, uint8 side)
+          - event: DuelSettled(uint256 indexed id, uint8 outcome, uint32 votesA, uint32 votesB, uint128 poolA, uint128 poolB)
+            field_selection:
+              transaction_fields:
+                - from # who settled, for the activity feed
+          - event: Claimed(uint256 indexed id, address indexed user, uint256 amount, uint256 repGained)
+          - event: VoterRewardClaimed(uint256 indexed id, address indexed voter, uint256 amount)
+          - event: CreatorPaid(uint256 indexed id, address indexed creator, uint256 amount)
