@@ -7,7 +7,7 @@ import { dripRouter } from "./routes/drip.js";
 import { insightRouter } from "./routes/insight.js";
 import { uploadRouter } from "./routes/upload.js";
 import { uploadsRouter } from "./routes/uploads.js";
-import { ensureDirs, UPLOADS_DIR } from "./store.js";
+import { ensureDirs, ROOT, UPLOADS_DIR } from "./store.js";
 
 const app = express();
 
@@ -87,7 +87,22 @@ function warnAboutPublicUrl(): void {
   }
 }
 
+/**
+ * On Railway and Render the container filesystem is thrown away on every deploy. If DATA_DIR sits
+ * inside the app directory, uploads survive until the next push and then vanish, leaving onchain
+ * URLs pointing at files that no longer exist.
+ */
+function warnAboutDataDir(): void {
+  const inAppDir = ROOT.startsWith(process.cwd());
+  if (inAppDir && process.env.NODE_ENV === "production") {
+    log.warn(`DATA_DIR resolves to ${ROOT}, inside the app directory.`);
+    log.warn("  On a container host this disk is wiped on every deploy, taking every uploaded artwork with it.");
+    log.warn("  Mount a volume and set DATA_DIR to it (the Dockerfile and render.yaml use /data).");
+  }
+}
+
 warnAboutPublicUrl();
+warnAboutDataDir();
 
 app.listen(PORT, () => {
   log.info(`Pairwise server on :${PORT}`);

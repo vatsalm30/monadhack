@@ -1,0 +1,40 @@
+# Render blueprint. Declares the persistent disk, which is the whole point:
+# upload URLs are written into the contract and cannot be edited, so losing the
+# disk loses the artwork for every duel ever posted.
+services:
+  - type: web
+    name: pairwise-server
+    runtime: docker
+    rootDir: server
+    dockerfilePath: ./Dockerfile
+    plan: starter # the free plan has no persistent disk
+    healthCheckPath: /api/health
+    disk:
+      name: pairwise-data
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      - key: DATA_DIR
+        value: /data
+      - key: PORT
+        value: 8787
+      - key: RPC_URL
+        value: https://testnet-rpc.monad.xyz
+      - key: CONTRACT_ADDRESS
+        value: "0xe4F3962C903a7e1bC45A2D0bD8A7F5b6379a3353"
+      - key: FAUCET_DRIP_MON
+        value: "0.05"
+      - key: MODERATION_STRICT
+        value: "false"
+      # Set these in the dashboard. PUBLIC_URL must be the final public hostname
+      # BEFORE the first real duel: it is what gets frozen onchain.
+      - key: PUBLIC_URL
+        sync: false
+      - key: ALLOWED_ORIGINS
+        sync: false
+      - key: ENVIO_URL
+        sync: false
+      - key: HUNYUAN_API_KEY
+        sync: false
+      - key: FAUCET_PRIVATE_KEY
+        sync: false
