@@ -1,0 +1,31 @@
+{
+  "name": "pairwise-server",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "smoke": "node scripts/smoke-upload.mjs"
+  },
+  "dependencies": {
+    "cors": "2.8.5",
+    "dotenv": "16.4.7",
+    "express": "4.22.3",
+    "multer": "2.4.0",
+    "viem": "2.57.3"
+  },
+  "devDependencies": {
+    "@types/cors": "2.8.17",
+    "@types/express": "4.17.21",
+    "@types/multer": "1.4.12",
+    "@types/node": "22.10.5",
+    "tsx": "4.23.15",
+    "typescript": "5.7.3"
+  }
+}
