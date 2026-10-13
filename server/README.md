@@ -14,6 +14,7 @@ They just cannot post new artwork or read insights.
 | `POST /api/upload` | Takes two images (`a`, `b`), sha256s them, screens both with Hunyuan, stores them, returns `{ uriA, uriB, hashA, hashB }` for `createDuel`. |
 | `GET /api/insight/:duelId` | For a duel settled A or B: sends both artworks and the vote counts to `hunyuan-vision` and returns `{ winner, why, tips }`. Generated once, cached forever. |
 | `POST /api/drip` | Sends `FAUCET_DRIP_MON` to a new passkey account so its first transaction does not fail on gas. |
+| `GET /uploads/:hash` | Serves an artwork by its onchain sha256, so a duel whose recorded URL died is still recoverable. |
 | `GET /api/health` | `{ ok, moderation, faucet, contract, indexer }` — which capabilities are actually configured. |
 
 Full request and response shapes, including every error, are in `shared/api.md`.
@@ -57,6 +58,17 @@ fail-open, so a Hunyuan outage during judging cannot block the demo. A clear rej
 is always a 422 regardless.
 
 ## Deploy
+
+### Recovering a duel whose URL died
+
+Uploads are stored content-addressed as `<sha256>.<ext>`, and that sha256 is already onchain as
+`hashA`/`hashB`. So the artwork is findable from the chain alone: `GET /uploads/<hash>` serves it
+from whichever server holds the file, no database and no migration. The web app tries the recorded
+`uriA`/`uriB` first and falls back to this, which is what makes a bad `PUBLIC_URL` survivable instead
+of permanent. Moving hosts is then a matter of copying `data/uploads` across.
+
+The server warns loudly at boot if `PUBLIC_URL` is a localhost address while a contract is
+configured, because duels posted in that state record an image URL nobody else can ever load.
 
 **Upload URLs are written into the contract and are immutable.** Set the final `PUBLIC_URL` and
 attach a persistent disk *before* anyone posts a real duel, or the artwork for every duel ever posted

@@ -6,6 +6,7 @@ import { log } from "./log.js";
 import { dripRouter } from "./routes/drip.js";
 import { insightRouter } from "./routes/insight.js";
 import { uploadRouter } from "./routes/upload.js";
+import { uploadsRouter } from "./routes/uploads.js";
 import { ensureDirs, UPLOADS_DIR } from "./store.js";
 
 const app = express();
@@ -31,6 +32,9 @@ app.use(express.json({ limit: "1mb" }));
 
 // Uploads are referenced by immutable onchain URLs, so they are served forever and cached hard.
 app.use("/uploads", express.static(UPLOADS_DIR, { immutable: true, maxAge: "365d", fallthrough: true }));
+
+// Falls through to here when the path carries no extension: /uploads/<sha256> from the onchain hash.
+app.use(uploadsRouter);
 
 app.get("/api/health", (_req, res) => {
   res.json({
@@ -69,6 +73,21 @@ app.use((error: Error & { code?: string }, _req: express.Request, res: express.R
 });
 
 await ensureDirs();
+
+/**
+ * Upload URLs are written into the contract and are immutable, so handing out an address that will
+ * never resolve from another machine is permanent damage, not a config mistake you can undo.
+ */
+function warnAboutPublicUrl(): void {
+  const unreachable = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])/i.test(PUBLIC_URL);
+  if (unreachable && HAS_CONTRACT) {
+    log.warn("PUBLIC_URL points at localhost while a contract is configured.");
+    log.warn("  Any duel posted now records an image URL nobody else can ever load, and it cannot be edited.");
+    log.warn("  Set PUBLIC_URL to a public hostname you control before posting real duels.");
+  }
+}
+
+warnAboutPublicUrl();
 
 app.listen(PORT, () => {
   log.info(`Pairwise server on :${PORT}`);
