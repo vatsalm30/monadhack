@@ -2,8 +2,19 @@ import type { Duel, Insight, Outcome, Position, Side, UserStats } from "@shared/
 
 export type { Duel, Insight, Outcome, Position, Side, UserStats };
 
-/** Mirrors the indexer's `Activity` entity. Not in shared/types.ts, which Branch A owns. */
-export type ActivityKind = "CREATED" | "PREDICTED" | "COMMITTED" | "REVEALED" | "SETTLED" | "CLAIMED";
+/**
+ * Mirrors the `ActivityKind` enum in indexer/schema.graphql exactly. Not in shared/types.ts, which
+ * Branch A owns. A claim is split three ways because the money comes from three different places.
+ */
+export type ActivityKind =
+  | "CREATED"
+  | "PREDICTED"
+  | "VOTE_COMMITTED"
+  | "VOTE_REVEALED"
+  | "SETTLED"
+  | "CLAIMED"
+  | "VOTER_REWARD"
+  | "CREATOR_PAID";
 
 export interface ActivityItem {
   id: string;

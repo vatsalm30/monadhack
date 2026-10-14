@@ -4,10 +4,12 @@ import type { ActivityItem } from "../lib/types";
 const LABEL: Record<ActivityItem["kind"], string> = {
   CREATED: "posted the duel",
   PREDICTED: "predicted",
-  COMMITTED: "sealed a vote",
-  REVEALED: "revealed",
+  VOTE_COMMITTED: "sealed a vote",
+  VOTE_REVEALED: "revealed",
   SETTLED: "settled it",
-  CLAIMED: "claimed",
+  CLAIMED: "claimed winnings",
+  VOTER_REWARD: "claimed the voter reward",
+  CREATOR_PAID: "took the creator share",
 };
 
 export function ActivityList({ items }: { items: ActivityItem[] }): JSX.Element {

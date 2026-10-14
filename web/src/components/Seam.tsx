@@ -1,4 +1,5 @@
 import { monWithUnit, percent } from "../lib/format";
+import { DuelImage } from "./DuelImage";
 import { poolSplit } from "../lib/phase";
 import type { Duel } from "../lib/types";
 
@@ -29,10 +30,10 @@ export function Seam({ duel, withFooter = false, showWinner = false }: SeamProps
         aria-label={`Side A holds ${percent(split)} of the pool, side B holds ${percent(1 - split)}.`}
       >
         <div className="seam-side seam-side-a">
-          <img src={duel.uriA} alt={`${duel.title}, side A`} loading="lazy" decoding="async" />
+          <DuelImage uri={duel.uriA} hash={duel.hashA} alt={`${duel.title}, side A`} />
         </div>
         <div className="seam-side seam-side-b">
-          <img src={duel.uriB} alt={`${duel.title}, side B`} loading="lazy" decoding="async" />
+          <DuelImage uri={duel.uriB} hash={duel.hashB} alt={`${duel.title}, side B`} />
         </div>
         <div className="seam-rule" aria-hidden="true" />
         <span className="seam-tag seam-tag-a" aria-hidden="true">

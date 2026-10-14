@@ -128,7 +128,16 @@ function mapUser(raw: RawDuel): UserStats {
   };
 }
 
-const ACTIVITY_KINDS: readonly ActivityKind[] = ["CREATED", "PREDICTED", "COMMITTED", "REVEALED", "SETTLED", "CLAIMED"];
+const ACTIVITY_KINDS: readonly ActivityKind[] = [
+  "CREATED",
+  "PREDICTED",
+  "VOTE_COMMITTED",
+  "VOTE_REVEALED",
+  "SETTLED",
+  "CLAIMED",
+  "VOTER_REWARD",
+  "CREATOR_PAID",
+];
 
 function mapActivity(raw: RawDuel): ActivityItem {
   const kind = str(raw.kind).toUpperCase();
