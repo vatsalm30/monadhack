@@ -133,12 +133,12 @@ const users = new Map<string, UserStats>([
 const activity: ActivityItem[] = [
   { id: "6-c", duelId: "6", user: OTHERS[0], kind: "CREATED", side: null, amount: 0n, timestamp: T0 - 620 },
   { id: "6-p1", duelId: "6", user: MOCK_ME, kind: "PREDICTED", side: "A", amount: parseEther("0.4"), timestamp: T0 - 540 },
-  { id: "6-v1", duelId: "6", user: OTHERS[3], kind: "COMMITTED", side: null, amount: 0n, timestamp: T0 - 420 },
+  { id: "6-v1", duelId: "6", user: OTHERS[3], kind: "VOTE_COMMITTED", side: null, amount: 0n, timestamp: T0 - 420 },
   { id: "6-p2", duelId: "6", user: OTHERS[1], kind: "PREDICTED", side: "A", amount: parseEther("0.5"), timestamp: T0 - 300 },
   { id: "6-p3", duelId: "6", user: OTHERS[2], kind: "PREDICTED", side: "B", amount: parseEther("0.35"), timestamp: T0 - 120 },
   { id: "4-c", duelId: "4", user: OTHERS[1], kind: "CREATED", side: null, amount: 0n, timestamp: T0 - 1340 },
-  { id: "4-v1", duelId: "4", user: MOCK_ME, kind: "COMMITTED", side: null, amount: 0n, timestamp: T0 - 900 },
-  { id: "4-r1", duelId: "4", user: OTHERS[2], kind: "REVEALED", side: "A", amount: 0n, timestamp: T0 - 60 },
+  { id: "4-v1", duelId: "4", user: MOCK_ME, kind: "VOTE_COMMITTED", side: null, amount: 0n, timestamp: T0 - 900 },
+  { id: "4-r1", duelId: "4", user: OTHERS[2], kind: "VOTE_REVEALED", side: "A", amount: 0n, timestamp: T0 - 60 },
   { id: "2-s", duelId: "2", user: MOCK_ME, kind: "SETTLED", side: "A", amount: 0n, timestamp: T0 - 86_300 },
   { id: "2-cl", duelId: "2", user: OTHERS[0], kind: "CLAIMED", side: "A", amount: parseEther("1.24"), timestamp: T0 - 86_000 },
 ];
@@ -216,7 +216,7 @@ export function mockCommitVote(duelId: string, side: "A" | "B"): void {
   committedSides.set(duelId, side);
   patch(duelId, (d) => ({ ...d, committedVotes: d.committedVotes + 1 }));
   upsert(duelId, (p) => ({ ...p, committed: true }));
-  log({ duelId, user: MOCK_ME, kind: "COMMITTED", side: null, amount: 0n });
+  log({ duelId, user: MOCK_ME, kind: "VOTE_COMMITTED", side: null, amount: 0n });
 }
 
 export function mockRevealVote(duelId: string, side: "A" | "B"): void {
@@ -226,7 +226,7 @@ export function mockRevealVote(duelId: string, side: "A" | "B"): void {
     votesB: side === "B" ? d.votesB + 1 : d.votesB,
   }));
   upsert(duelId, (p) => ({ ...p, revealed: side }));
-  log({ duelId, user: MOCK_ME, kind: "REVEALED", side, amount: 0n });
+  log({ duelId, user: MOCK_ME, kind: "VOTE_REVEALED", side, amount: 0n });
 }
 
 export function mockSettle(duelId: string): void {
@@ -243,7 +243,8 @@ export function mockSettle(duelId: string): void {
 export function mockClaim(duelId: string, kind: "WINNINGS" | "VOTER" | "CREATOR"): void {
   if (kind === "WINNINGS") upsert(duelId, (p) => ({ ...p, claimed: true }));
   if (kind === "VOTER") upsert(duelId, (p) => ({ ...p, voterRewardClaimed: true }));
-  log({ duelId, user: MOCK_ME, kind: "CLAIMED", side: null, amount: 0n });
+  const activityKind = kind === "VOTER" ? "VOTER_REWARD" : kind === "CREATOR" ? "CREATOR_PAID" : "CLAIMED";
+  log({ duelId, user: MOCK_ME, kind: activityKind, side: null, amount: 0n });
 }
 
 export function mockCreateDuel(input: {
