@@ -10,8 +10,26 @@ const required = (name: string, fallback: string): string => {
 
 export const PORT = Number(str("PORT", "8787"));
 
+/**
+ * Container hosts expose their own public hostname, so use it when PUBLIC_URL has not been set yet.
+ *
+ * This matters more than it looks: upload URLs are frozen into the contract, and a service that
+ * booted before its PUBLIC_URL was filled in would otherwise hand out `http://localhost:8787/...`
+ * and damage every duel posted in that window. Falling back to the host's own URL means the worst
+ * case is a hostname you later move away from, which the `/uploads/:hash` route can recover from.
+ */
+const hostProvidedUrl = (): string => {
+  const render = str("RENDER_EXTERNAL_URL");
+  if (render !== "") return render;
+  const railway = str("RAILWAY_PUBLIC_DOMAIN");
+  if (railway !== "") return `https://${railway}`;
+  return "http://localhost:8787";
+};
+
 /** Prefix for the upload URLs handed back to the client. */
-export const PUBLIC_URL = required("PUBLIC_URL", "http://localhost:8787").replace(/\/$/, "");
+export const PUBLIC_URL = required("PUBLIC_URL", hostProvidedUrl()).replace(/\/$/, "");
+/** True when PUBLIC_URL came from the host rather than from configuration. */
+export const PUBLIC_URL_INFERRED = str("PUBLIC_URL") === "";
 
 /** Comma separated CORS allowlist. */
 export const ALLOWED_ORIGINS = str("ALLOWED_ORIGINS", "http://localhost:5173")

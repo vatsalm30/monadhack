@@ -26,8 +26,10 @@ services:
         value: "0.05"
       - key: MODERATION_STRICT
         value: "false"
-      # Set these in the dashboard. PUBLIC_URL must be the final public hostname
-      # BEFORE the first real duel: it is what gets frozen onchain.
+      # Set these in the dashboard. Until PUBLIC_URL is set the server falls back to
+      # RENDER_EXTERNAL_URL, so a service that boots before you fill it in still hands
+      # out a reachable address rather than localhost. Set it to the domain you intend
+      # to keep BEFORE the first real duel: it is what gets frozen onchain.
       - key: PUBLIC_URL
         sync: false
       - key: ALLOWED_ORIGINS
