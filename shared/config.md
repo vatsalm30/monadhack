@@ -21,6 +21,11 @@ Never commit `.env`. The root `.env.example` lists every name below.
 | `HUNYUAN_API_KEY` | `sk-…` | Server only. If missing, moderation is skipped with a warning. |
 | `FAUCET_PRIVATE_KEY` | `0x…` | Funds the drip endpoint. Keep out of git. |
 | `FAUCET_DRIP_MON` | `0.05` | MON sent per new account. |
+| `CONTRACT_ADDRESS` | `0x…` | Pairwise address, used by `/api/insight` to read a duel over RPC. |
+| `RPC_URL` | `https://testnet-rpc.monad.xyz` | Monad RPC. |
+| `ENVIO_URL` | `https://…/v1/graphql` | Indexer endpoint. Tried before RPC when resolving a duel. |
+| `MODERATION_STRICT` | `false` | `true` rejects uploads when the moderation call itself fails. |
+| `DATA_DIR` | `data` | Uploads, insight cache and drip ledger. Mount a volume here in production. |
 
 ## `contracts/`
 

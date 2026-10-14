@@ -29,6 +29,21 @@ likely-stolen work). Identical files are rejected: the contract reverts when `ha
 **422** `{ "error": "Side B looks like gore. Upload your own artwork." }` — moderation rejected a file,
 the two files are identical, or a file is the wrong type or too large.
 
+## `GET /uploads/:hash`
+
+Resolves an artwork by its onchain sha256, with no extension. Uploads are stored content-addressed
+as `<sha256>.<ext>`, and the same hash is in the contract as `hashA`/`hashB`, so this endpoint can
+serve any historical duel even when its recorded `uriA`/`uriB` no longer resolves — a dead hostname,
+a moved host, or a volume that was attached too late.
+
+`hash` may be given with or without the `0x` prefix.
+
+**200** the image bytes, `cache-control: public, max-age=31536000, immutable`.
+**404** `{ "error": "This server does not have that artwork." }` — valid hash, file not held here.
+**404** `{ "error": "Not an artwork hash." }` — not 64 hex characters.
+
+Clients should try the recorded URI first and fall back to this.
+
 ## `GET /api/insight/:duelId`
 
 Only available once the duel has settled with outcome `A` or `B`. The duel is read over RPC, both
