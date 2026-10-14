@@ -67,7 +67,7 @@ inside the app directory in production. Check the deploy logs for both.
 Then confirm:
 
 ```bash
-curl https://your-server/api/health
+curl https://pairwise-server.onrender.com/api/health
 # { "ok": true, "moderation": true, "faucet": true, "contract": true, "indexer": true }
 ```
 
