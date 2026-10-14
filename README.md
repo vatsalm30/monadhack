@@ -137,8 +137,11 @@ Two jobs, both server-side so the key is never in the bundle:
 | Contract | [`0xe4F3962C903a7e1bC45A2D0bD8A7F5b6379a3353`](https://testnet.monadexplorer.com/address/0xe4F3962C903a7e1bC45A2D0bD8A7F5b6379a3353) |
 | Deploy block | `70808463` |
 | Constructor | `revealWindow = 180`, `minReveals = 1` |
+| Server | https://pairwise-server.onrender.com ([health](https://pairwise-server.onrender.com/api/health)) |
+| Indexer | _pending — Envio hosted_ |
+| Web | _pending — Vercel_ |
 
-Web, indexer and server URLs land here as they go live. `DEPLOY.md` has the full checklist, including
+Remaining URLs land here as they go live. `DEPLOY.md` has the full checklist, including
 the one ordering rule: **`PUBLIC_URL` must be final before the first real duel**, because upload URLs
 are written into the contract and have no setter.
 
