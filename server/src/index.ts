@@ -1,6 +1,15 @@
 import express from "express";
 import cors from "cors";
-import { ALLOWED_ORIGINS, ENVIO_URL, HAS_CONTRACT, HAS_FAUCET, MAX_UPLOAD_BYTES, PORT, PUBLIC_URL } from "./env.js";
+import {
+  ALLOWED_ORIGINS,
+  ENVIO_URL,
+  HAS_CONTRACT,
+  HAS_FAUCET,
+  MAX_UPLOAD_BYTES,
+  PORT,
+  PUBLIC_URL,
+  PUBLIC_URL_INFERRED,
+} from "./env.js";
 import { hunyuanEnabled } from "./hunyuan.js";
 import { log } from "./log.js";
 import { dripRouter } from "./routes/drip.js";
@@ -84,6 +93,9 @@ function warnAboutPublicUrl(): void {
     log.warn("PUBLIC_URL points at localhost while a contract is configured.");
     log.warn("  Any duel posted now records an image URL nobody else can ever load, and it cannot be edited.");
     log.warn("  Set PUBLIC_URL to a public hostname you control before posting real duels.");
+  } else if (PUBLIC_URL_INFERRED) {
+    log.warn(`PUBLIC_URL was not set, so upload URLs will use the host's own address: ${PUBLIC_URL}`);
+    log.warn("  That address is written into the contract permanently. Set PUBLIC_URL to the domain you intend to keep.");
   }
 }
 

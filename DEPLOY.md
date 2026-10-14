@@ -57,8 +57,12 @@ Pick a host. Both are configured in-repo.
 rather than the generated `*.up.railway.app` or `*.onrender.com` hostname. Then the string frozen
 onchain belongs to you, and changing hosts later is a DNS edit instead of data loss.
 
-The server refuses to fail quietly here: it warns at boot if `PUBLIC_URL` is a localhost address while
-a contract is set, and if `DATA_DIR` sits inside the app directory in production. Check the deploy logs.
+If `PUBLIC_URL` is still blank when the service first boots, the server uses the host's own address
+(`RENDER_EXTERNAL_URL` on Render, `RAILWAY_PUBLIC_DOMAIN` on Railway) rather than localhost, so a duel
+posted in that window is still reachable and still recoverable by hash. It warns when it does this.
+
+It also warns if `PUBLIC_URL` is a localhost address while a contract is set, and if `DATA_DIR` sits
+inside the app directory in production. Check the deploy logs for both.
 
 Then confirm:
 
