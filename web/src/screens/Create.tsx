@@ -97,7 +97,7 @@ export function Create(): JSX.Element {
   }
 
   return (
-    <div className="stack">
+    <div className="stack narrow">
       <div className="stack-sm">
         <h1>Post a duel</h1>
         <p className="small muted">

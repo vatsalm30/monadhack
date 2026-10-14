@@ -9,6 +9,8 @@ interface SeamProps {
   withFooter?: boolean;
   /** Dims the losing side once a duel has settled. */
   showWinner?: boolean;
+  /** Thumbnail mode: no A/B tags. */
+  bare?: boolean;
 }
 
 /**
@@ -16,7 +18,7 @@ interface SeamProps {
  * the pool split, so the market *is* the layout: money on A pushes the seam right and gives A more
  * of the frame. The CSS transition means a landed prediction slides the seam rather than jumping.
  */
-export function Seam({ duel, withFooter = false, showWinner = false }: SeamProps): JSX.Element {
+export function Seam({ duel, withFooter = false, showWinner = false, bare = false }: SeamProps): JSX.Element {
   const split = poolSplit(duel);
   const total = duel.poolA + duel.poolB;
   const settled = duel.outcome === "A" || duel.outcome === "B";
@@ -36,12 +38,16 @@ export function Seam({ duel, withFooter = false, showWinner = false }: SeamProps
           <DuelImage uri={duel.uriB} hash={duel.hashB} alt={`${duel.title}, side B`} />
         </div>
         <div className="seam-rule" aria-hidden="true" />
-        <span className="seam-tag seam-tag-a" aria-hidden="true">
-          A
-        </span>
-        <span className="seam-tag seam-tag-b" aria-hidden="true">
-          B
-        </span>
+        {bare ? null : (
+          <>
+            <span className="seam-tag seam-tag-a" aria-hidden="true">
+              A
+            </span>
+            <span className="seam-tag seam-tag-b" aria-hidden="true">
+              B
+            </span>
+          </>
+        )}
         {showWinner && settled ? (
           <div className="seam-win">
             <span>{duel.outcome} won</span>

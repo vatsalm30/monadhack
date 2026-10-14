@@ -52,3 +52,25 @@ export function repFor(duel: Duel, firstAt: number): number {
 
 /** Rep a prediction placed right now would earn, used to nudge early calls. */
 export const repIfPredictedNow = (duel: Duel, now: number): number => repFor(duel, now);
+
+/**
+ * Parimutuel price as a multiple: what 1 MON on `side` returns if it wins, at the current pool.
+ * Null when nobody is on that side yet.
+ */
+export function multipleFor(duel: Duel, side: "A" | "B"): number | null {
+  const sidePool = side === "A" ? duel.poolA : duel.poolB;
+  if (sidePool === 0n) return null;
+  const pool = duel.poolA + duel.poolB;
+  return Number((pool * (BPS - FEE_BPS) * 100n) / BPS / sidePool) / 100;
+}
+
+/** What a new stake would pay if `side` wins, counting the stake itself in the pool. */
+export function payoutIfAdded(duel: Duel, side: "A" | "B", stake: bigint, existing = 0n): bigint {
+  if (stake <= 0n) return 0n;
+  const next: Duel = {
+    ...duel,
+    poolA: side === "A" ? duel.poolA + stake : duel.poolA,
+    poolB: side === "B" ? duel.poolB + stake : duel.poolB,
+  };
+  return payoutFor(next, existing + stake, side);
+}

@@ -3,8 +3,9 @@ import { parseEther } from "viem";
 import { useAccount } from "../lib/account";
 import * as actions from "../lib/actions";
 import { describeTxError } from "../lib/chain";
-import { monWithUnit } from "../lib/format";
-import { claimable, repIfPredictedNow } from "../lib/payout";
+import { monWithUnit, percent } from "../lib/format";
+import { claimable, payoutIfAdded, repIfPredictedNow } from "../lib/payout";
+import { chanceOf } from "./Outcomes";
 import { nowSeconds, phaseOf } from "../lib/phase";
 import type { Duel, Position, Side } from "../lib/types";
 
@@ -71,7 +72,16 @@ export function ActionPanel({ duel, position, onDone }: Props): JSX.Element {
   if (account.status !== "signed-in") {
     return (
       <div className="card card-pad panel">
-        <p className="muted small">Sign in with your passkey to predict, vote or claim.</p>
+        <h3>Make your call</h3>
+        <div className="choice">
+          <button type="button" className="btn" disabled>
+            A · {percent(chanceOf(duel, "A"))}
+          </button>
+          <button type="button" className="btn" disabled>
+            B · {percent(chanceOf(duel, "B"))}
+          </button>
+        </div>
+        <p className="muted small">Log in with your passkey to predict, vote or claim. No wallet needed.</p>
       </div>
     );
   }
@@ -160,7 +170,7 @@ export function ActionPanel({ duel, position, onDone }: Props): JSX.Element {
                 aria-pressed={side === "A" || lockedSide === "A"}
                 onClick={() => setSide("A")}
               >
-                A wins
+                A · {percent(chanceOf(duel, "A"))}
               </button>
               <button
                 type="button"
@@ -169,7 +179,7 @@ export function ActionPanel({ duel, position, onDone }: Props): JSX.Element {
                 aria-pressed={side === "B" || lockedSide === "B"}
                 onClick={() => setSide("B")}
               >
-                B wins
+                B · {percent(chanceOf(duel, "B"))}
               </button>
             </div>
 
@@ -197,6 +207,28 @@ export function ActionPanel({ duel, position, onDone }: Props): JSX.Element {
               </div>
             </div>
 
+            {(() => {
+              const chosen = lockedSide ?? side;
+              let wei = 0n;
+              try {
+                wei = parseEther(amount.trim() as `${number}`);
+              } catch {
+                wei = 0n;
+              }
+              if (!chosen || wei <= 0n) return null;
+              return (
+                <div className="payout">
+                  <div className="payout-row">
+                    <span className="muted">If {chosen} wins, you get</span>
+                    <span className="payout-win">{monWithUnit(payoutIfAdded(duel, chosen, wei, staked), 3)}</span>
+                  </div>
+                  <div className="payout-row tiny muted">
+                    <span>Payout moves as others predict. 7% goes to the creator and voters.</span>
+                  </div>
+                </div>
+              );
+            })()}
+
             <button
               type="button"
               className="btn btn-primary btn-block btn-lg"
@@ -214,7 +246,7 @@ export function ActionPanel({ duel, position, onDone }: Props): JSX.Element {
                 void run("predict", () => actions.predict(duel.id, chosen, wei), `Prediction placed on ${chosen}.`);
               }}
             >
-              {busy === "predict" ? "Placing…" : `Predict ${lockedSide ?? side ?? ""}`.trim()}
+              {busy === "predict" ? "Placing…" : lockedSide ?? side ? `Predict ${lockedSide ?? side}` : "Pick a side"}
             </button>
             <p className="tiny muted">Calling now earns about {rep} taste rep if you are right. Earlier calls earn more.</p>
           </>

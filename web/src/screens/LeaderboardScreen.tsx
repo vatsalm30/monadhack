@@ -5,40 +5,50 @@ import { paths } from "../lib/router";
 import { useAsync } from "../lib/useAsync";
 import type { LeaderboardRow } from "../lib/types";
 
-function Table({
-  rows,
-  caption,
-  value,
-  note,
-}: {
-  rows: LeaderboardRow[];
-  caption: string;
+interface Column {
+  label: string;
   value: (row: LeaderboardRow) => string;
-  note: (row: LeaderboardRow) => string;
-}): JSX.Element {
+  num?: boolean;
+}
+
+function Table({ rows, caption, columns }: { rows: LeaderboardRow[]; caption: string; columns: Column[] }): JSX.Element {
   return (
-    <div className="card card-pad stack-sm">
-      <h3>{caption}</h3>
+    <section className="card card-pad stack-sm">
+      <h2>{caption}</h2>
       {rows.length === 0 ? (
         <p className="small muted">Nobody here yet.</p>
       ) : (
-        <ul className="list">
-          {rows.map((row) => (
-            <li key={row.id}>
-              <span className="small">
-                <span className="muted mono">{row.rank}.</span>{" "}
-                <a className="mono" href={paths.profile(row.id)}>
-                  {shortAddress(row.id)}
-                </a>
-                <br />
-                <span className="tiny muted">{note(row)}</span>
-              </span>
-              <strong className="mono small">{value(row)}</strong>
-            </li>
-          ))}
-        </ul>
+        <table className="table">
+          <thead>
+            <tr>
+              <th>Account</th>
+              {columns.map((c) => (
+                <th key={c.label} className={c.num ? "num" : undefined}>
+                  {c.label}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row) => (
+              <tr key={row.id}>
+                <td>
+                  <span className="rank">{row.rank}</span>
+                  <a className="mono" href={paths.profile(row.id)}>
+                    {shortAddress(row.id)}
+                  </a>
+                </td>
+                {columns.map((c) => (
+                  <td key={c.label} className={c.num ? "num" : undefined}>
+                    {c.value(row)}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
       )}
-    </div>
+    </section>
   );
 }
 
@@ -57,10 +67,10 @@ export function LeaderboardScreen({ room }: { room: Room | null }): JSX.Element 
 
       <div className="tabs" role="tablist" aria-label="Rooms">
         <a className="tab" role="tab" href={paths.leaderboard()} aria-selected={room === null}>
-          all rooms
+          All rooms
         </a>
         {ROOMS.map((slug) => (
-          <a key={slug} className="tab" role="tab" href={paths.leaderboard(slug)} aria-selected={room === slug}>
+          <a key={slug} className="tab cap" role="tab" href={paths.leaderboard(slug)} aria-selected={room === slug}>
             {slug}
           </a>
         ))}
@@ -71,20 +81,25 @@ export function LeaderboardScreen({ room }: { room: Room | null }): JSX.Element 
         <div className="skeleton" style={{ height: 240 }} />
       ) : (
         <>
-          <Table
-            caption="Top tastemakers"
-            rows={data?.tastemakers ?? []}
-            value={(row) => `${row.tasteRep} rep`}
-            note={(row) =>
-              `${row.correctCalls}/${row.predictions} calls right · ${monWithUnit(row.earned)} profit`
-            }
-          />
-          <Table
-            caption="Top creators"
-            rows={data?.creators ?? []}
-            value={(row) => monWithUnit(row.creatorEarned)}
-            note={(row) => `${row.duelsCreated} duel${row.duelsCreated === 1 ? "" : "s"} posted`}
-          />
+          <div className="board" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 460px), 1fr))" }}>
+            <Table
+              caption="Top tastemakers"
+              rows={data?.tastemakers ?? []}
+              columns={[
+                { label: "Calls right", value: (r) => `${r.correctCalls} of ${r.predictions}`, num: true },
+                { label: "Profit", value: (r) => monWithUnit(r.earned, 2), num: true },
+                { label: "Taste rep", value: (r) => String(r.tasteRep), num: true },
+              ]}
+            />
+            <Table
+              caption="Top creators"
+              rows={data?.creators ?? []}
+              columns={[
+                { label: "Duels", value: (r) => String(r.duelsCreated), num: true },
+                { label: "Earned", value: (r) => monWithUnit(r.creatorEarned, 2), num: true },
+              ]}
+            />
+          </div>
         </>
       )}
     </div>

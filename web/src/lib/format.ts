@@ -49,3 +49,6 @@ export function timeAgo(unixSeconds: number, now = Math.floor(Date.now() / 1000)
 }
 
 export const percent = (fraction: number): string => `${Math.round(fraction * 100)}%`;
+
+/** `1.86x`, or a dash when there is no price yet. */
+export const multiple = (value: number | null): string => (value === null ? "—" : `${value.toFixed(2)}x`);

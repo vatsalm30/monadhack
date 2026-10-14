@@ -2,6 +2,7 @@ import { ActionPanel } from "../components/ActionPanel";
 import { ActivityList } from "../components/ActivityList";
 import { PhaseBadge } from "../components/Countdown";
 import { InsightPanel } from "../components/InsightPanel";
+import { OutcomeRow, chanceOf, leader } from "../components/Outcomes";
 import { Seam } from "../components/Seam";
 import { useAccount } from "../lib/account";
 import { getActivity, getDuel, getMyPosition } from "../lib/data";
@@ -42,79 +43,119 @@ export function DuelScreen({ id }: { id: string }): JSX.Element {
   const settled = duel.outcome === "A" || duel.outcome === "B";
   const reveals = duel.votesA + duel.votesB;
   const split = poolSplit(duel);
+  const lead = settled ? (duel.outcome as "A" | "B") : leader(duel);
+  const roomSlug = isRoom(duel.room) ? duel.room : "open";
 
   return (
-    <div className="stack">
-      <div className="spread">
-        <div className="stack-sm">
+    <div className="split-layout">
+      <div className="stack" style={{ gap: 20 }}>
+        <div className="market-head">
+          <nav className="crumbs" aria-label="Breadcrumb">
+            <a href={paths.feed(roomSlug)}>{duel.room}</a>
+            <span aria-hidden="true">/</span>
+            <span>Duel #{duel.id}</span>
+          </nav>
           <h1>{duel.title}</h1>
+          <div className="spread">
+            <div className="chance">
+              <span className="odds-big">{settled ? `${duel.outcome} won` : lead ? percent(chanceOf(duel, lead)) : "50%"}</span>
+              <span className="chance-label">
+                {settled
+                  ? `${duel.votesA} to ${duel.votesB} in revealed votes`
+                  : duel.outcome === "REFUND"
+                    ? "refunded"
+                    : lead
+                      ? `chance the crowd picks ${lead}`
+                      : "even split so far"}
+              </span>
+            </div>
+            <PhaseBadge duel={duel} />
+          </div>
           <p className="small muted">
-            <a href={paths.feed(isRoom(duel.room) ? duel.room : "open")}>{duel.room}</a> · posted by{" "}
+            Posted by{" "}
             <a href={paths.profile(duel.creator)} className="mono">
               {shortAddress(duel.creator)}
-            </a>
+            </a>{" "}
+            · {monWithUnit(duel.poolA + duel.poolB)} pool · {duel.predictors} predicting
           </p>
         </div>
-        <PhaseBadge duel={duel} />
-      </div>
 
-      <div className="card">
-        <Seam duel={duel} withFooter showWinner />
-      </div>
+        <div className="card">
+          <Seam duel={duel} withFooter showWinner />
+        </div>
 
-      <ActionPanel duel={duel} position={positionState.data} onDone={refresh} />
+        <section className="card card-pad outcome-table" aria-label="Outcomes">
+          <div className="outcome-head">
+            <span />
+            <span>Outcome</span>
+            <span>{settled ? "" : "1 MON pays"}</span>
+            <span>Chance</span>
+          </div>
+          <div className="outcomes">
+            <OutcomeRow duel={duel} side="A" />
+            <OutcomeRow duel={duel} side="B" />
+          </div>
+        </section>
 
-      {settled ? <InsightPanel duelId={duel.id} /> : null}
+        {settled ? <InsightPanel duelId={duel.id} /> : null}
 
-      <div className="card card-pad stack-sm">
-        <h3>Where it stands</h3>
-        <ul className="list">
-          <li>
-            <span className="small muted">Pool</span>
-            <span className="small mono">{monWithUnit(duel.poolA + duel.poolB)}</span>
-          </li>
-          <li>
-            <span className="small muted">Split</span>
-            <span className="small mono">
-              A {percent(split)} · B {100 - Math.round(split * 100)}%
-            </span>
-          </li>
-          <li>
-            <span className="small muted">Predictors</span>
-            <span className="small mono">{duel.predictors}</span>
-          </li>
-          <li>
-            <span className="small muted">Ballots</span>
-            <span className="small mono">
-              {duel.committedVotes} sealed{reveals > 0 ? `, ${reveals} revealed` : ""}
-            </span>
-          </li>
-          {reveals > 0 ? (
+        <section className="card card-pad stack-sm">
+          <h3>Rules</h3>
+          <ul className="list">
             <li>
-              <span className="small muted">Votes</span>
+              <span className="small muted">Split</span>
               <span className="small mono">
-                A {duel.votesA} · B {duel.votesB} ({percent(voteSplit(duel))} for A)
+                A {percent(split)} · B {100 - Math.round(split * 100)}%
               </span>
             </li>
-          ) : null}
-        </ul>
-        {phaseOf(duel) === "COMMIT" ? (
-          <p className="tiny muted">Votes stay hidden until the reveal window, so the pool is a real guess.</p>
+            <li>
+              <span className="small muted">Ballots</span>
+              <span className="small mono">
+                {duel.committedVotes} sealed{reveals > 0 ? `, ${reveals} revealed` : ""}
+              </span>
+            </li>
+            {reveals > 0 ? (
+              <li>
+                <span className="small muted">Votes</span>
+                <span className="small mono">
+                  A {duel.votesA} · B {duel.votesB} ({percent(voteSplit(duel))} for A)
+                </span>
+              </li>
+            ) : null}
+            <li>
+              <span className="small muted">Fees</span>
+              <span className="small">5% to the creator, 2% to revealed voters</span>
+            </li>
+          </ul>
+          <p className="tiny muted">
+            Predictors stake on which side the crowd picks. A separate group votes blind and reveals after
+            predictions close; the revealed majority settles the market. A tie or too few reveals refunds
+            every stake.
+          </p>
+        </section>
+
+        <section className="card card-pad stack-sm">
+          <h3>Activity</h3>
+          <ActivityList items={activityState.data ?? []} />
+        </section>
+
+        {CHAIN_READY ? (
+          <p className="tiny muted">
+            <a href={`${EXPLORER}/address/${CONTRACT}`} target="_blank" rel="noreferrer">
+              Duel #{duel.id} onchain
+            </a>
+          </p>
         ) : null}
       </div>
 
-      <div className="card card-pad stack-sm">
-        <h3>Activity</h3>
-        <ActivityList items={activityState.data ?? []} />
-      </div>
-
-      {CHAIN_READY ? (
-        <p className="tiny muted">
-          <a href={`${EXPLORER}/address/${CONTRACT}`} target="_blank" rel="noreferrer">
-            Duel #{duel.id} onchain
-          </a>
-        </p>
-      ) : null}
+      <aside className="rail-sticky stack">
+        <ActionPanel duel={duel} position={positionState.data} onDone={refresh} />
+        {phaseOf(duel) === "COMMIT" ? (
+          <p className="tiny muted" style={{ padding: "0 4px" }}>
+            Votes stay hidden until the reveal window, so the price is a real guess.
+          </p>
+        ) : null}
+      </aside>
     </div>
   );
 }
