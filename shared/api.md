@@ -71,4 +71,21 @@ Rate limited to once per address and once per IP per day. Gas limit is always `2
 
 ## `GET /api/health`
 
-**200** `{ "ok": true }`
+**200**
+
+```json
+{
+  "ok": true,
+  "moderation": true,
+  "faucet": true,
+  "faucetAddress": "0x…",
+  "publicUrl": "https://…",
+  "contract": true,
+  "indexer": false
+}
+```
+
+`faucet` only says a key parsed. `faucetAddress` is what you fund, and checking its balance onchain is
+how you confirm the account you funded is the account the server will drip from. `publicUrl` is the
+prefix that gets written permanently into the contract on the next upload, so it is worth reading
+after any config change.
