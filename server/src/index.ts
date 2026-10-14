@@ -10,6 +10,7 @@ import {
   PUBLIC_URL,
   PUBLIC_URL_INFERRED,
 } from "./env.js";
+import { faucetAccount } from "./chain.js";
 import { hunyuanEnabled } from "./hunyuan.js";
 import { log } from "./log.js";
 import { dripRouter } from "./routes/drip.js";
@@ -50,6 +51,10 @@ app.get("/api/health", (_req, res) => {
     ok: true,
     moderation: hunyuanEnabled(),
     faucet: HAS_FAUCET,
+    // Public information, and the only way to confirm the funded account is the configured one:
+    // "faucet: true" alone says a key parsed, not that it is the key you meant or that it has MON.
+    faucetAddress: faucetAccount?.address ?? null,
+    publicUrl: PUBLIC_URL,
     contract: HAS_CONTRACT,
     indexer: ENVIO_URL !== "",
   });
